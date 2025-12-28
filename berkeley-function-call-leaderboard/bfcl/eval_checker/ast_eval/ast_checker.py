@@ -25,7 +25,8 @@ PYTHON_NESTED_TYPE_CHECK_LIST = ["array", "tuple"]
 
 NESTED_CONVERSION_TYPE_LIST = ["Array", "ArrayList", "array"]
 
-
+### BU BİR DİSPATCHER FONKSİYON GELEN ÇAĞRIYI UYGUN MODÜLE İLETMEKTE MESELA TEST KATEGORİSİ NEYSE ONUN
+### CHECKERINA YOLLAYAN FONKSİYON BUDUR.
 #### Main function ####
 def ast_checker(
     func_description, model_output, possible_answer, language, test_category, model_name
@@ -52,7 +53,7 @@ def ast_checker(
             func_description[0], model_output[0], possible_answer[0], language, model_name
         )
 
-
+#GROUND TRUTH'TAN DOĞRU ŞEMAYI BULUR. 
 #### Helper functions for AST ####
 def find_description(func_descriptions, name):
     if type(func_descriptions) == list:
@@ -63,7 +64,6 @@ def find_description(func_descriptions, name):
     else:
         # it is a dict, there is only one function
         return func_descriptions
-
 
 def get_possible_answer_type(possible_answer: list):
     for answer in possible_answer:
@@ -162,7 +162,7 @@ def type_checker(
     result["error_type"] = "type_error:simple"
     return result
 
-
+#model küçük yazım hatası yaparsa cezalandırmamak için bu fonksiyon vardır.
 def standardize_string(input_string: str):
     # This function standardizes the string by removing all the spaces, ",./-_*^" punctuation, and converting it to lowercase
     # It will also convert all the single quotes to double quotes
@@ -190,7 +190,8 @@ def string_checker(param: str, model_output: str, possible_answer: list):
 
     return {"valid": True, "error": []}
 
-
+##Modelin ürettiği listenin, eleman değerleri ve sırası korunarak possible answers listesindeki 
+#kabul edilebilir listelerden biriyle birebir uyuşup uyuşmadığını denetler.
 def list_checker(param: str, model_output: list, possible_answer: list):
     # Convert the tuple to a list
 
@@ -224,7 +225,8 @@ def list_checker(param: str, model_output: list, possible_answer: list):
 
     return {"valid": True, "error": []}
 
-
+##Modelin döndürdüğü sözlüğün yalnızca izin verilen anahtarları içerip içermediğini ve her anahtarın 
+##değerinin possible answers içinde geçerli olup olmadığını doğrular.
 def dict_checker(param: str, model_output: dict, possible_answers: list):
     # This function works for simple dictionaries, but not dictionaries with nested dictionaries.
     # The current dataset only contains simple dictionaries, so this is sufficient.
@@ -287,7 +289,8 @@ def dict_checker(param: str, model_output: dict, possible_answers: list):
 
     return result
 
-
+##Sıralı bir sözlük listesinde, her bir sözlüğün ground truth’taki karşılığıyla birebir 
+##eşleşip eşleşmediğini uzunluk ve sıra dahil olmak üzere kontrol eder.
 def list_dict_checker(param: str, model_output: list, possible_answers: list):
     # This function takes in a list of dictionaries and checks if each dictionary is valid
     # The order of the dictionaries in the list must match the order of the possible answers
@@ -319,7 +322,8 @@ def list_dict_checker(param: str, model_output: list, possible_answers: list):
 
     return result
 
-
+##Modelin yaptığı tek bir fonksiyon çağrısının, 
+#fonksiyon adı, parametreleri, tipleri ve değerleriyle birlikte tamamen doğru olup olmadığını kontrol eder.
 def simple_function_checker(
     func_description: dict,
     model_output: dict,
@@ -503,7 +507,7 @@ def simple_function_checker(
 
     return result
 
-
+##Birden fazla fonksiyon çağrısının hem doğru içerikte hem de ground truth’ta belirtilen sırayla yapılmasını zorunlu kılar.
 def parallel_function_checker_enforce_order(
     func_descriptions: list,
     model_output: list,
@@ -539,7 +543,8 @@ def parallel_function_checker_enforce_order(
 
     return {"valid": True, "error": []}
 
-
+##Modelin birden fazla farklı veya aynı fonksiyonu çağırdığı senaryolarda, çağrıların sırasını önemsemeden her ground truth çağrısı
+##için model çıktısında birebir eşleşen bir fonksiyon olup olmadığını kontrol eder.
 def parallel_function_checker_no_order(
     func_descriptions: list,
     model_output: list,
@@ -609,7 +614,8 @@ def parallel_function_checker_no_order(
 
     return {"valid": True, "error": []}
 
-
+##Aynı fonksiyonun birden fazla kez çağrılması gereken durumlarda, modelin gerekli sayıda çağrı 
+##yapıp yapmadığını ve çağrılardan birinin doğru olup olmadığını denetler.
 def multiple_function_checker(
     func_descriptions: list,
     model_output: list,
