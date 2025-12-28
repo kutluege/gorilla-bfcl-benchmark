@@ -5,7 +5,8 @@ from bfcl.eval_checker.multi_turn_eval.multi_turn_utils import (
 
 #### Main functions ####
 
-
+#multi-turn fc'ların çalışıp çalışmadığına ground truth ile aynı state
+#ulaşıp ulaşmadığına ve sonuçlara bakar.
 def multi_turn_checker(
     multi_turn_model_result_list_decoded: list[list[list[str]]],
     multi_turn_ground_truth_list: list[list[str]],
@@ -17,8 +18,8 @@ def multi_turn_checker(
     The main function that checks the correctness of the model's function call execution.
     """
 
-    initial_config: dict = test_entry["initial_config"]
-    involved_classes: list = test_entry["involved_classes"]
+    initial_config: dict = test_entry["initial_config"] #başlangıç state'i
+    involved_classes: list = test_entry["involved_classes"] # simulasyona giren class'lar
     test_entry_id: str = test_entry["id"]
     test_category: str = test_entry_id.rsplit("_", 1)[0]
     execution_results: list[dict] = []
@@ -36,7 +37,8 @@ def multi_turn_checker(
         single_turn_ground_truth_execution_results = []
         model_instances = {}  # Will be overwritten in the for loop
         single_step_model_execution_results = []  # Will be overwritten in the for loop
-    
+
+        #decoder'dan çıkan fonksiyon listesi py fonksiyonları olarak çalıştırılır.
         for single_step_model_response in single_turn_model_response_list:
             single_step_model_execution_results, model_instances = (
                 execute_multi_turn_func_call(
@@ -54,7 +56,8 @@ def multi_turn_checker(
             single_turn_model_execution_results.extend(single_step_model_execution_results)
             single_turn_model_execution_results_uncombined.append(single_step_model_execution_results)
 
-        # Execute the ground truth function calls
+        # AŞAĞIDAKİ KOD GROUND TRUTH FUNC CALL'LARI ÇALIŞTIRIR.
+        #BU SAYEDE MODEL VS GROUND TRUTH STATE KIYASI YAPILABİLİR
         single_turn_ground_truth_execution_results, ground_truth_instances = (
             execute_multi_turn_func_call(
                 func_call_list=single_turn_ground_truth_list,
@@ -77,7 +80,8 @@ def multi_turn_checker(
             }
         )
 
-        # If the ground truth list is not empty, then the model response list should not be empty
+        # GROUND TRUTH O TURN'DE BİR ŞEY YAPIYORSA MODEL SESSİZ KALAMAZ
+        #KALIYORSA HATALARI TUTAR.
         if len(single_turn_ground_truth_list) > 0:
             if not single_turn_model_response_list or is_empty_execute_response(
                 single_turn_model_response_list
@@ -103,14 +107,14 @@ def multi_turn_checker(
         ), f"Model instances and ground truth instances do not match in length for turn {turn_index}. Model instances: {len(model_instances)}, Ground truth instances: {len(ground_truth_instances)}"
         assert set(model_instances.keys()) == set(ground_truth_instances.keys())
 
-        # Check the state of the instances
+        # SONDA STATE'LER AYNI MI AŞAĞIDAKİ ONA BAKAR.
         state_check_result = state_checker(model_instances, ground_truth_instances)
         if not state_check_result["valid"]:
             state_check_result["execution_result"] = execution_results
             return state_check_result
 
-        # Check the response of the function calls
-        # We use the all_turn_model_execution_results to accomodate the situation where the model invokes a function in a previous turn, and thus don't need to invoke it again in the current turn.
+        #modelin çok turlu çalışmada ürettiği tüm gerçek çıktılar içinde, ground truth’un beklediği 
+        #çıktılardan tek bir tanesini bile atlayıp atlamadığını kontrol eder
         response_check_result = response_checker(
             all_turn_model_execution_results,
             single_turn_ground_truth_execution_results,
