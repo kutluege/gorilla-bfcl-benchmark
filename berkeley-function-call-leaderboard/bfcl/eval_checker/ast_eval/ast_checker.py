@@ -26,7 +26,7 @@ PYTHON_NESTED_TYPE_CHECK_LIST = ["array", "tuple"]
 NESTED_CONVERSION_TYPE_LIST = ["Array", "ArrayList", "array"]
 
 
-#### Main function ####
+#Ana router fonksiyondur.
 def ast_checker(
     func_description, model_output, possible_answer, language, test_category, model_name
 ):
@@ -53,7 +53,7 @@ def ast_checker(
         )
 
 
-#### Helper functions for AST ####
+#GROUND TRUTH'TAN DOĞRU FONKSİYON ŞEMASINI GETİRİR.
 def find_description(func_descriptions, name):
     if type(func_descriptions) == list:
         for func_description in func_descriptions:
@@ -71,7 +71,7 @@ def get_possible_answer_type(possible_answer: list):
             return type(answer)
     return None
 
-
+#FONKSİYON İSİMLERİNİ MODELLERE UYGUN HALE GETİRİR
 def convert_func_name(function_name, model_name: str):
     model_name_escaped = model_name.replace("_", "/")
     if "." in function_name:
@@ -81,7 +81,7 @@ def convert_func_name(function_name, model_name: str):
             return re.sub(r"\.", "_", function_name)
     return function_name
 
-
+#PARAMETRENİN TİPİ MANTIKEN KABUL EDİLEBİLİR Mİ BUNA BAKIYOR.
 def type_checker(
     param: str,
     value,
@@ -93,6 +93,8 @@ def type_checker(
     # NOTE: This type checker only supports nested type checking for one level deep.
     # We didn't implement recursive type checking for nested types, as it's not needed for the current use case and it's very complex.
 
+    
+    
     result = {
         "valid": True,
         "error": [],
@@ -162,7 +164,7 @@ def type_checker(
     result["error_type"] = "type_error:simple"
     return result
 
-
+#NOKTALAMA BOŞLUK UPPERCASELOWERCASE FARKLARINI YOK SAYAR.
 def standardize_string(input_string: str):
     # This function standardizes the string by removing all the spaces, ",./-_*^" punctuation, and converting it to lowercase
     # It will also convert all the single quotes to double quotes
@@ -171,7 +173,7 @@ def standardize_string(input_string: str):
     regex_string = r"[ \,\.\/\-\_\*\^]"
     return re.sub(regex_string, "", input_string).lower().replace("'", '"')
 
-
+#STANDARDİZE EDİLMİŞ STRİNGLER MODEL VE GROUND TRUTH'TA AYNI MI?
 def string_checker(param: str, model_output: str, possible_answer: list):
     standardize_possible_answer = []
     standardize_model_output = standardize_string(model_output)
@@ -190,7 +192,7 @@ def string_checker(param: str, model_output: str, possible_answer: list):
 
     return {"valid": True, "error": []}
 
-
+#MODELİN VERDİĞİ LİSTE HEM ELEMANLAR HEM DE SIRA AÇISINDAN KABUL EDİLEBİLİR Mİ?
 def list_checker(param: str, model_output: list, possible_answer: list):
     # Convert the tuple to a list
 
@@ -224,7 +226,8 @@ def list_checker(param: str, model_output: list, possible_answer: list):
 
     return {"valid": True, "error": []}
 
-
+#Modelin döndürdüğü sözlüğün yalnızca izin verilen anahtarları içerip içermediğini ve her 
+#anahtarın değerinin possible answers’a uygun olup olmadığını kontrol eder.
 def dict_checker(param: str, model_output: dict, possible_answers: list):
     # This function works for simple dictionaries, but not dictionaries with nested dictionaries.
     # The current dataset only contains simple dictionaries, so this is sufficient.
@@ -287,7 +290,8 @@ def dict_checker(param: str, model_output: dict, possible_answers: list):
 
     return result
 
-
+#Modelin ürettiği sözlük listesinin uzunluk, sıra ve her bir sözlüğün içeriği açısından 
+#ground truth ile birebir eşleşip eşleşmediğini doğrular.
 def list_dict_checker(param: str, model_output: list, possible_answers: list):
     # This function takes in a list of dictionaries and checks if each dictionary is valid
     # The order of the dictionaries in the list must match the order of the possible answers
@@ -319,7 +323,8 @@ def list_dict_checker(param: str, model_output: list, possible_answers: list):
 
     return result
 
-
+#Modelin yaptığı tek bir fonksiyon çağrısının adından parametre 
+#değerlerine kadar tüm yönleriyle tamamen doğru olup olmadığını uçtan uca denetler.
 def simple_function_checker(
     func_description: dict,
     model_output: dict,
